@@ -164,10 +164,10 @@ stages:
               cd dbt/fpl_analytics
 
               ../../.venv/bin/dbt debug \
-                --profiles-dir ../profiles
+                --profiles-dir "$(Build.SourcesDirectory)/dbt/profiles"
 
               ../../.venv/bin/dbt build \
-                --profiles-dir ../profiles
+                --profiles-dir "$(Build.SourcesDirectory)/dbt/profiles"
             displayName: dbt build and tests
             env:
               POSTGRES_HOST: $(POSTGRES_HOST)
