@@ -32,7 +32,7 @@ class DatabaseSettings(BaseSettings):
 
 
 def create_database_engine(settings: DatabaseSettings | None = None) -> Engine:
-    resolved_settings = settings or DatabaseSettings()
+    resolved_settings = settings or DatabaseSettings()  # type: ignore[call-arg]
 
     return create_engine(
         resolved_settings.sqlalchemy_url,

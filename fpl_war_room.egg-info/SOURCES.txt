@@ -6,4 +6,7 @@ fpl_war_room.egg-info/requires.txt
 fpl_war_room.egg-info/top_level.txt
 ingestion/__init__.py
 ingestion/common/__init__.py
+ingestion/common/database.py
 ingestion/fpl/__init__.py
+ingestion/fpl/client.py
+ingestion/fpl/extract_bootstrap.py

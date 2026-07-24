@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 import httpx
 from pydantic import Field
@@ -54,4 +54,29 @@ class FPLClient:
     def get_bootstrap_static(self) -> dict[str, Any]:
         response = self.client.get("/bootstrap-static/")
         response.raise_for_status()
-        return response.json()
+
+        payload: object = response.json()
+
+        if not isinstance(payload, dict):
+            raise TypeError("FPL bootstrap response was not a JSON object")
+
+        return cast(dict[str, Any], payload)
+
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=1, max=8),
+        reraise=True,
+    )
+    def get_fixtures(self) -> list[dict[str, Any]]:
+        response = self.client.get("/fixtures/")
+        response.raise_for_status()
+
+        payload: object = response.json()
+
+        if not isinstance(payload, list):
+            raise TypeError("FPL fixtures response was not a JSON array")
+
+        if not all(isinstance(item, dict) for item in payload):
+            raise TypeError("FPL fixtures response contained an invalid record")
+
+        return cast(list[dict[str, Any]], payload)
