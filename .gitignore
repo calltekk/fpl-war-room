@@ -30,3 +30,4 @@ dbt/fpl_analytics/target/
 
 # Raw ingestion output
 data/raw/
+.env.neon
