@@ -1,0 +1,32 @@
+name: "fpl_analytics"
+version: "1.0.0"
+config-version: 2
+
+profile: "fpl_analytics"
+
+model-paths: ["models"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  fpl_analytics:
+    staging:
+      +materialized: view
+      +schema: staging
+
+    silver:
+      +materialized: table
+      +schema: silver
+
+    gold:
+      +materialized: table
+      +schema: gold
+
+seeds:
+  fpl_analytics:
+    +schema: silver
+    +quote_columns: false

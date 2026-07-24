@@ -1,0 +1,43 @@
+version: 2
+
+sources:
+  - name: bronze
+    description: Raw FPL data loaded by Python ingestion pipelines.
+    schema: bronze
+
+    tables:
+      - name: fpl_players
+        description: Current player attributes from bootstrap-static.
+
+        columns:
+          - name: player_id
+            tests:
+              - not_null
+              - unique
+
+      - name: fpl_teams
+        description: Premier League team reference data.
+
+        columns:
+          - name: team_id
+            tests:
+              - not_null
+              - unique
+
+      - name: fpl_events
+        description: FPL gameweek metadata.
+
+        columns:
+          - name: event_id
+            tests:
+              - not_null
+              - unique
+
+      - name: fpl_fixtures
+        description: Premier League fixture data.
+
+        columns:
+          - name: fixture_id
+            tests:
+              - not_null
+              - unique

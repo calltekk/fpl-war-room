@@ -1,0 +1,61 @@
+version: 2
+
+models:
+  - name: dim_players
+    description: Cleaned player dimension enriched with team and position data.
+
+    columns:
+      - name: player_id
+        tests:
+          - not_null
+          - unique
+
+      - name: full_name
+        tests:
+          - not_null
+
+      - name: team_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_fpl_teams')
+                field: team_id
+
+      - name: position_id
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4]
+
+      - name: current_price
+        tests:
+          - not_null
+
+  - name: fct_fixtures
+    description: Cleaned fixture fact enriched with team and gameweek details.
+
+    columns:
+      - name: fixture_id
+        tests:
+          - not_null
+          - unique
+
+      - name: team_home_id
+        tests:
+          - not_null
+
+      - name: team_away_id
+        tests:
+          - not_null
+
+      - name: fixture_status
+        tests:
+          - accepted_values:
+              arguments:
+                values:
+                  - finished
+                  - live
+                  - unscheduled
+                  - upcoming

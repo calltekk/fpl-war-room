@@ -15,3 +15,6 @@ data/processed/*
 dbt/**/target/
 dbt/**/logs/
 airflow/logs/
+
+# Local dbt connection profile
+dbt/profiles/profiles.yml
