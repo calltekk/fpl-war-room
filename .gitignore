@@ -18,3 +18,15 @@ airflow/logs/
 
 # Local dbt connection profile
 dbt/profiles/profiles.yml
+
+# Airflow runtime files
+airflow/logs/
+airflow/config/
+airflow/plugins/
+
+# dbt runtime files
+dbt/fpl_analytics/logs/
+dbt/fpl_analytics/target/
+
+# Raw ingestion output
+data/raw/
