@@ -41,3 +41,9 @@ export type TeamFixtureSummary = {
   average_difficulty_next_five: number;
   next_five_opponents: string;
 };
+
+export type DataRefreshStatus = {
+  last_successful_refresh: string | null;
+  latest_pipeline: string | null;
+  records_loaded: number | null;
+};

@@ -7,21 +7,37 @@ import { RecommendationPanels } from "@/components/dashboard/recommendation-pane
 import { Sidebar } from "@/components/layout/sidebar";
 import {
   getCaptainProjections,
+  getDataRefreshStatus,
   getDifferentials,
   getPlayerProjections,
   getTeamFixtureSummary,
 } from "@/lib/api";
 
 export default async function Home() {
-  const [players, captains, differentials, fixtureRuns] =
+  const [
+    players,
+    captains,
+    differentials,
+    fixtureRuns,
+    refreshStatus,
+  ] =
     await Promise.all([
       getPlayerProjections(20),
       getCaptainProjections(5),
       getDifferentials(10),
       getTeamFixtureSummary(),
+      getDataRefreshStatus(),
     ]);
 
   const topPlayers = players.slice(0, 4);
+
+  const refreshedAt = refreshStatus.last_successful_refresh
+    ? new Intl.DateTimeFormat("en-GB", {
+        dateStyle: "medium",
+        timeStyle: "short",
+        timeZone: "Europe/London",
+      }).format(new Date(refreshStatus.last_successful_refresh))
+    : "Not yet refreshed";
 
   return (
     <main className="min-h-screen bg-[#091423] text-white">
@@ -41,7 +57,7 @@ export default async function Home() {
               </div>
 
               <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-300">
-                Data refreshed from FPL
+                Last refreshed: {refreshedAt}
               </div>
             </div>
           </header>

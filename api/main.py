@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from api.routes.fixtures import router as fixtures_router
 from api.routes.players import router as players_router
+from api.routes.status import router as status_router
 
 app = FastAPI(
     title="FPL War Room API",
@@ -25,6 +26,7 @@ app.add_middleware(
 
 app.include_router(players_router)
 app.include_router(fixtures_router)
+app.include_router(status_router)
 
 
 @app.get("/health")

@@ -53,3 +53,9 @@ export function getTeamFixtureSummary(): Promise<
     "/fixtures/team-summary",
   );
 }
+
+export function getDataRefreshStatus() {
+  return fetchJson<
+    import("@/types/fpl").DataRefreshStatus
+  >("/status/data-refresh");
+}
