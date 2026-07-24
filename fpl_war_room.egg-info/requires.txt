@@ -1,4 +1,6 @@
 httpx<1,>=0.28
+fastapi<1,>=0.116
+uvicorn[standard]<1,>=0.35
 pandas<3,>=2.2
 plotly<7,>=6
 streamlit<2,>=1.40

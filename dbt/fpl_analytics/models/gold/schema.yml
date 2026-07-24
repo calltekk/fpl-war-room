@@ -50,3 +50,70 @@ models:
                   - Differential
                   - Moderate ownership
                   - Highly owned
+
+  - name: player_upcoming_fixtures
+    columns:
+      - name: player_id
+        tests:
+          - not_null
+
+      - name: fixture_id
+        tests:
+          - not_null
+
+      - name: fixture_number
+        tests:
+          - not_null
+
+  - name: player_expected_points
+    columns:
+      - name: player_id
+        tests:
+          - not_null
+
+      - name: fixture_id
+        tests:
+          - not_null
+
+      - name: expected_points
+        tests:
+          - not_null
+
+  - name: player_expected_points_summary
+    columns:
+      - name: player_id
+        tests:
+          - not_null
+          - unique
+
+      - name: expected_points_next_3
+        tests:
+          - not_null
+
+      - name: expected_points_next_5
+        tests:
+          - not_null
+
+  - name: captain_rankings
+    columns:
+      - name: player_id
+        tests:
+          - not_null
+          - unique
+
+      - name: captain_rank
+        tests:
+          - not_null
+          - unique
+
+  - name: differential_targets
+    columns:
+      - name: player_id
+        tests:
+          - not_null
+          - unique
+
+      - name: differential_rank
+        tests:
+          - not_null
+          - unique

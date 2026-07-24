@@ -226,6 +226,126 @@ def apply_theme() -> None:
 .player-image[alt=""] {
     visibility: hidden;
 }
+        
+        .target-card {
+            height: 100%;
+            min-height: 255px;
+            padding: 1.15rem;
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            border-radius: 18px;
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(139, 92, 246, 0.13),
+                    rgba(16, 31, 49, 0.98) 52%
+                );
+            box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18);
+        }
+
+        .target-card-top {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .target-rank {
+            color: #00ff87;
+            font-size: 0.82rem;
+            font-weight: 900;
+        }
+
+        .target-avatar {
+            display: flex;
+            width: 48px;
+            height: 48px;
+            flex: 0 0 48px;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            color: #07121f;
+            background: linear-gradient(135deg, #00ff87, #8bffca);
+            font-weight: 900;
+        }
+
+        .target-identity {
+            min-width: 0;
+        }
+
+        .target-name {
+            overflow: hidden;
+            color: #f5f7fb;
+            font-size: 1.02rem;
+            font-weight: 850;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .target-meta {
+            margin-top: 0.15rem;
+            color: #9fb0c4;
+            font-size: 0.78rem;
+        }
+
+        .target-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.45rem;
+            margin-top: 1rem;
+        }
+
+        .target-metric {
+            padding: 0.7rem 0.45rem;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            text-align: center;
+        }
+
+        .target-metric span {
+            display: block;
+            color: #9fb0c4;
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .target-metric strong {
+            display: block;
+            margin-top: 0.2rem;
+            color: #00ff87;
+            font-size: 0.95rem;
+        }
+
+        .target-fixtures {
+            margin-top: 0.9rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        .target-fixtures span {
+            color: #9fb0c4;
+            font-size: 0.65rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .target-fixtures p {
+            margin: 0.25rem 0 0;
+            color: #d8e1eb;
+            font-size: 0.76rem;
+            line-height: 1.4;
+        }
+
+        .stTabs [data-baseweb="tab"] {
+            color: #aebdd0 !important;
+        }
+
+        .stTabs [aria-selected="true"] {
+            color: #ffffff !important;
+            background: #7048e8 !important;
+        }
+
         </style>
         """,
         unsafe_allow_html=True,

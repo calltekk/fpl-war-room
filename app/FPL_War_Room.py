@@ -85,24 +85,54 @@ players = read_query(
     """
     select
         player_id,
-        player_image_url,
         full_name,
         web_name,
         team_name,
         position_short_name,
         current_price,
-        total_points,
-        points_per_million,
         selected_by_percent,
-        average_difficulty_next_five,
-        ownership_category,
-        fixture_outlook,
+        expected_points_next_3,
+        expected_points_next_5,
+        expected_points_per_million,
+        average_difficulty_next_5,
+        expected_points_rank_overall,
+        expected_points_rank_by_position,
         next_five_opponents
-    from analytics_gold.player_shortlist
-    order by
-        average_difficulty_next_five asc nulls last,
-        selected_by_percent desc,
-        current_price desc
+    from analytics_gold.player_expected_points_summary
+    order by expected_points_rank_overall
+    """
+)
+
+captains = read_query(
+    """
+    select
+        captain_rank,
+        web_name as full_name,
+        team_name,
+        expected_points_next_3,
+        captain_points_next_3,
+        next_five_opponents
+    from analytics_gold.captain_rankings
+    order by captain_rank
+    limit 5
+    """
+)
+
+differentials = read_query(
+    """
+    select
+        differential_rank,
+        web_name as full_name,
+        team_name,
+        position_short_name,
+        current_price,
+        selected_by_percent,
+        expected_points_next_5,
+        differential_score,
+        next_five_opponents
+    from analytics_gold.differential_targets
+    order by differential_rank
+    limit 10
     """
 )
 
@@ -124,21 +154,104 @@ overview_tab, players_tab, fixtures_tab = st.tabs(
 )
 
 with overview_tab:
-    st.subheader("Pre-season watchlist")
+    st.subheader("Top projected targets")
+    st.caption("Baseline projections over each player's next five fixtures.")
 
     top_players = players.head(4)
 
     card_columns = st.columns(4)
 
-    for column, (_, player) in zip(
-        card_columns,
-        top_players.iterrows(),
-        strict=True,
+    for rank, (column, (_, player)) in enumerate(
+        zip(
+            card_columns,
+            top_players.iterrows(),
+            strict=True,
+        ),
+        start=1,
     ):
         with column:
-            render_player_card(cast(dict[str, Any], player.to_dict()))
+            render_player_card(
+                cast(dict[str, Any], player.to_dict()),
+                rank=rank,
+            )
 
     st.write("")
+
+    recommendation_col1, recommendation_col2 = st.columns(2)
+
+    with recommendation_col1:
+        st.subheader("Captain picks")
+        st.caption("Highest projected returns across the next three fixtures.")
+
+        captain_display = captains.rename(
+            columns={
+                "captain_rank": "Rank",
+                "full_name": "Player",
+                "team_name": "Club",
+                "expected_points_next_3": "3-GW xPts",
+                "captain_points_next_3": "Captain xPts",
+                "next_five_opponents": "Fixtures",
+            }
+        )
+
+        st.dataframe(
+            captain_display[
+                [
+                    "Rank",
+                    "Player",
+                    "Club",
+                    "3-GW xPts",
+                    "Captain xPts",
+                ]
+            ],
+            use_container_width=True,
+            hide_index=True,
+            height=245,
+            column_config={
+                "3-GW xPts": st.column_config.NumberColumn(format="%.1f"),
+                "Captain xPts": st.column_config.NumberColumn(format="%.1f"),
+            },
+        )
+
+    with recommendation_col2:
+        st.subheader("Differential targets")
+        st.caption("Low-owned players with strong projected upside.")
+
+        differential_display = differentials.rename(
+            columns={
+                "differential_rank": "Rank",
+                "full_name": "Player",
+                "team_name": "Club",
+                "position_short_name": "Pos",
+                "current_price": "Price",
+                "selected_by_percent": "Owned",
+                "expected_points_next_5": "5-GW xPts",
+                "differential_score": "Score",
+            }
+        )
+
+        st.dataframe(
+            differential_display[
+                [
+                    "Rank",
+                    "Player",
+                    "Club",
+                    "Pos",
+                    "Price",
+                    "Owned",
+                    "5-GW xPts",
+                ]
+            ],
+            use_container_width=True,
+            hide_index=True,
+            height=245,
+            column_config={
+                "Price": st.column_config.NumberColumn(format="£%.1fm"),
+                "Owned": st.column_config.NumberColumn(format="%.1f%%"),
+                "5-GW xPts": st.column_config.NumberColumn(format="%.1f"),
+            },
+        )
+
     st.subheader("Best fixture runs")
 
     chart = px.bar(
@@ -214,8 +327,7 @@ with players_tab:
                 "position_short_name",
                 "current_price",
                 "selected_by_percent",
-                "average_difficulty_next_five",
-                "fixture_outlook",
+                "average_difficulty_next_5",
                 "next_five_opponents",
             ]
         ],
@@ -233,11 +345,10 @@ with players_tab:
                 "Ownership",
                 format="%.1f%%",
             ),
-            "average_difficulty_next_five": st.column_config.NumberColumn(
+            "average_difficulty_next_5": st.column_config.NumberColumn(
                 "Next-five FDR",
                 format="%.2f",
             ),
-            "fixture_outlook": "Fixture outlook",
             "next_five_opponents": "Upcoming opponents",
         },
     )
@@ -249,7 +360,7 @@ with fixtures_tab:
         hide_index=True,
         column_config={
             "team_name": "Club",
-            "average_difficulty_next_five": st.column_config.NumberColumn(
+            "average_difficulty_next_5": st.column_config.NumberColumn(
                 "Average FDR",
                 format="%.2f",
             ),
