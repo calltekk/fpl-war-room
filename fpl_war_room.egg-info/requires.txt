@@ -1,4 +1,7 @@
 httpx<1,>=0.28
+pandas<3,>=2.2
+plotly<7,>=6
+streamlit<2,>=1.40
 psycopg[binary]<4,>=3.2
 pydantic<3,>=2.10
 pydantic-settings<3,>=2.7
@@ -11,3 +14,4 @@ pytest-mock<4,>=3.14
 respx<1,>=0.22
 ruff<1,>=0.9
 mypy<2,>=1.14
+pandas-stubs<3,>=2.2

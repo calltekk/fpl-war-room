@@ -31,6 +31,8 @@ def load_players(engine: Engine, players: list[dict[str, Any]]) -> int:
         """
         INSERT INTO bronze.fpl_players (
             player_id,
+            player_code,
+            photo_filename,
             first_name,
             second_name,
             web_name,
@@ -45,6 +47,8 @@ def load_players(engine: Engine, players: list[dict[str, Any]]) -> int:
         )
         VALUES (
             :player_id,
+            :player_code,
+            :photo_filename,
             :first_name,
             :second_name,
             :web_name,
@@ -59,6 +63,8 @@ def load_players(engine: Engine, players: list[dict[str, Any]]) -> int:
         )
         ON CONFLICT (player_id)
         DO UPDATE SET
+            player_code = EXCLUDED.player_code,
+            photo_filename = EXCLUDED.photo_filename,
             first_name = EXCLUDED.first_name,
             second_name = EXCLUDED.second_name,
             web_name = EXCLUDED.web_name,
@@ -76,6 +82,8 @@ def load_players(engine: Engine, players: list[dict[str, Any]]) -> int:
     records = [
         {
             "player_id": player["id"],
+            "player_code": player.get("code"),
+            "photo_filename": player.get("photo"),
             "first_name": player["first_name"],
             "second_name": player["second_name"],
             "web_name": player["web_name"],

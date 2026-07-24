@@ -1,5 +1,8 @@
 select
     p.player_id,
+    p.player_code,
+    p.photo_filename,
+    p.player_image_url,
     p.full_name,
     p.web_name,
     p.team_name,

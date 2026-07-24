@@ -1,5 +1,8 @@
 select
     p.player_id,
+    p.player_code,
+    p.photo_filename,
+    {{ player_image_url('p.player_code') }} as player_image_url,
     p.first_name,
     p.second_name,
     p.full_name,

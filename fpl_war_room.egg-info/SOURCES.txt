@@ -10,3 +10,4 @@ ingestion/common/database.py
 ingestion/fpl/__init__.py
 ingestion/fpl/client.py
 ingestion/fpl/extract_bootstrap.py
+ingestion/fpl/extract_fixtures.py

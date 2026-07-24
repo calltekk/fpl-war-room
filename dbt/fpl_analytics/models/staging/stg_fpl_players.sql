@@ -1,5 +1,7 @@
 select
     player_id,
+    player_code,
+    photo_filename,
     trim(first_name) as first_name,
     trim(second_name) as second_name,
     trim(first_name || ' ' || second_name) as full_name,
