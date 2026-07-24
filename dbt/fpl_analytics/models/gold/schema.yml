@@ -1,0 +1,52 @@
+version: 2
+
+models:
+  - name: team_upcoming_fixtures
+    columns:
+      - name: fixture_id
+        tests:
+          - not_null
+
+      - name: team_id
+        tests:
+          - not_null
+
+      - name: fixture_difficulty
+        tests:
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5]
+
+  - name: player_value_rankings
+    columns:
+      - name: player_id
+        tests:
+          - not_null
+          - unique
+
+      - name: points_per_million
+        tests:
+          - not_null
+
+  - name: team_fixture_summary
+    columns:
+      - name: team_id
+        tests:
+          - not_null
+          - unique
+
+  - name: player_shortlist
+    columns:
+      - name: player_id
+        tests:
+          - not_null
+          - unique
+
+      - name: ownership_category
+        tests:
+          - accepted_values:
+              arguments:
+                values:
+                  - Differential
+                  - Moderate ownership
+                  - Highly owned
