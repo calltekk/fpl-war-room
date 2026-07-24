@@ -21,6 +21,10 @@ class DatabaseSettings(BaseSettings):
     postgres_db: str = Field(alias="POSTGRES_DB")
     postgres_user: str = Field(alias="POSTGRES_USER")
     postgres_password: str = Field(alias="POSTGRES_PASSWORD")
+    postgres_sslmode: str = Field(
+        default="prefer",
+        alias="POSTGRES_SSLMODE",
+    )
 
     @property
     def sqlalchemy_url(self) -> str:
@@ -28,6 +32,7 @@ class DatabaseSettings(BaseSettings):
             f"postgresql+psycopg://{self.postgres_user}:"
             f"{self.postgres_password}@{self.postgres_host}:"
             f"{self.postgres_port}/{self.postgres_db}"
+            f"?sslmode={self.postgres_sslmode}"
         )
 
 
