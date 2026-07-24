@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 
 from airflow.sdk import DAG, task
 
-
 PROJECT_ROOT = "/opt/fpl-war-room"
 DBT_ROOT = f"{PROJECT_ROOT}/dbt/fpl_analytics"
 DBT_PROFILES = f"{PROJECT_ROOT}/dbt/profiles"
@@ -74,8 +73,8 @@ with DAG(
                 (
                     "from api.services.database import fetch_one; "
                     "row = fetch_one("
-                    "\"select count(*) as row_count "
-                    "from analytics_gold.player_expected_points_summary\""
+                    '"select count(*) as row_count '
+                    'from analytics_gold.player_expected_points_summary"'
                     "); "
                     "assert row is not None; "
                     "assert row['row_count'] > 0; "
