@@ -1,11 +1,16 @@
 with player_fixtures as (
     select
         p.player_id,
+        p.player_code,
+        p.photo_filename,
+        p.player_image_url,
         p.full_name,
         p.web_name,
         p.team_id,
         p.team_name,
         p.team_short_name,
+        p.team_code,
+        p.badge_url,
         p.position_id,
         p.position_name,
         p.position_short_name,

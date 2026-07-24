@@ -8,6 +8,9 @@ from pydantic import BaseModel
 class TeamFixtureSummary(BaseModel):
     team_id: int
     team_name: str
+    team_short_name: str
+    team_code: int | None
+    badge_url: str | None
     average_difficulty_next_five: float
     next_five_opponents: str
 

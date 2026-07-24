@@ -1,6 +1,7 @@
 import { ArrowUpRight } from "lucide-react";
 
 import { ClubBadge } from "@/components/shared/club-badge";
+import { PlayerImage } from "@/components/shared/player-image";
 import type { PlayerProjection } from "@/types/fpl";
 
 type PlayerTargetCardProps = {
@@ -13,22 +14,34 @@ export function PlayerTargetCard({
   return (
     <article className="group rounded-3xl border border-white/10 bg-gradient-to-br from-violet-500/15 via-[#111f31] to-[#0c1726] p-5">
       <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <ClubBadge
-            shortName={player.team_short_name}
-            size="lg"
+        <div className="flex min-w-0 items-center gap-4">
+          <PlayerImage
+            imageUrl={player.player_image_url}
+            playerName={player.web_name}
+            teamShortName={player.team_short_name}
+            badgeUrl={player.badge_url}
           />
 
           <div className="min-w-0">
             <p className="text-xs font-bold uppercase tracking-widest text-emerald-300">
               #{player.expected_points_rank_overall} target
             </p>
+
             <h3 className="mt-1 truncate text-xl font-black text-white">
               {player.web_name}
             </h3>
-            <p className="truncate text-sm text-slate-400">
-              {player.team_name} · {player.position_short_name}
-            </p>
+
+            <div className="mt-2 flex items-center gap-2">
+              <ClubBadge
+                shortName={player.team_short_name}
+                badgeUrl={player.badge_url}
+                size="sm"
+              />
+
+              <p className="truncate text-sm text-slate-400">
+                {player.team_name} · {player.position_short_name}
+              </p>
+            </div>
           </div>
         </div>
 

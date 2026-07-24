@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Crown, Swords } from "lucide-react";
 
+import { ClubBadge } from "@/components/shared/club-badge";
 import type {
   CaptainProjection,
   DifferentialProjection,
@@ -25,6 +26,8 @@ export function RecommendationPanels({
             name={player.web_name}
             description={player.team_name}
             value={player.captain_points_next_3.toFixed(1)}
+            teamShortName={player.team_short_name}
+            badgeUrl={player.badge_url}
           />
         ))}
       </Panel>
@@ -40,6 +43,8 @@ export function RecommendationPanels({
             name={player.web_name}
             description={`${player.team_name} · ${player.selected_by_percent.toFixed(1)}% owned`}
             value={player.expected_points_next_5.toFixed(1)}
+            teamShortName={player.team_short_name}
+            badgeUrl={player.badge_url}
           />
         ))}
       </Panel>
@@ -52,23 +57,35 @@ function Row({
   name,
   description,
   value,
+  teamShortName,
+  badgeUrl,
 }: {
   rank: number;
   name: string;
   description: string;
   value: string;
+  teamShortName: string;
+  badgeUrl: string | null;
 }) {
   return (
-    <div className="grid grid-cols-[2rem_1fr_auto] items-center gap-3 border-b border-white/5 py-3 last:border-0">
+    <div className="grid grid-cols-[2rem_2.5rem_1fr_auto] items-center gap-3 border-b border-white/5 py-3 last:border-0">
       <span className="text-sm font-black text-emerald-300">
         {rank}
       </span>
+
+      <ClubBadge
+        shortName={teamShortName}
+        badgeUrl={badgeUrl}
+        size="sm"
+      />
+
       <div className="min-w-0">
         <p className="truncate font-bold text-white">{name}</p>
         <p className="truncate text-xs text-slate-500">
           {description}
         </p>
       </div>
+
       <p className="font-black text-white">{value}</p>
     </div>
   );
@@ -91,6 +108,7 @@ function Panel({
         </div>
         <h2 className="text-xl font-black text-white">{title}</h2>
       </div>
+
       <div className="mt-5">{children}</div>
     </section>
   );

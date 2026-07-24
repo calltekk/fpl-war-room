@@ -15,6 +15,9 @@ def get_team_fixture_summary() -> list[TeamFixtureSummary]:
         select
             team_id,
             team_name,
+            team_short_name,
+            team_code,
+            badge_url,
             average_difficulty_next_five::float
                 as average_difficulty_next_five,
             next_five_opponents
