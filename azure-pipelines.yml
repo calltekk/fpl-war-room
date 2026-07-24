@@ -1,0 +1,283 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pr:
+  branches:
+    include:
+      - main
+
+resources:
+  containers:
+    - container: postgres
+      image: postgres:17-alpine
+      env:
+        POSTGRES_DB: fpl
+        POSTGRES_USER: fpl_user
+        POSTGRES_PASSWORD: fpl_ci_password
+      ports:
+        - 5432:5432
+      options: >-
+        --health-cmd "pg_isready -U fpl_user -d fpl"
+        --health-interval 5s
+        --health-timeout 5s
+        --health-retries 10
+
+variables:
+  PYTHON_VERSION: "3.12"
+  NODE_VERSION: "20.x"
+
+  POSTGRES_HOST: "localhost"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "fpl"
+  POSTGRES_USER: "fpl_user"
+  POSTGRES_PASSWORD: "fpl_ci_password"
+
+stages:
+  - stage: Validate
+    displayName: Application validation
+
+    jobs:
+      - job: PythonAndDbt
+        displayName: Python, PostgreSQL and dbt
+        pool:
+          vmImage: ubuntu-latest
+
+        services:
+          postgres: postgres
+
+        steps:
+          - checkout: self
+            clean: true
+
+          - task: UsePythonVersion@0
+            displayName: Use Python $(PYTHON_VERSION)
+            inputs:
+              versionSpec: "$(PYTHON_VERSION)"
+              addToPath: true
+
+          - bash: |
+              set -euo pipefail
+
+              python -m pip install --upgrade pip
+              python -m pip install uv
+
+              uv sync --frozen --extra dev
+
+              uv pip install \
+                --python .venv/bin/python \
+                "dbt-core==1.12.0" \
+                "dbt-postgres==1.11.0"
+            displayName: Install Python and dbt dependencies
+
+          - bash: |
+              set -euo pipefail
+
+              sudo apt-get update
+              sudo apt-get install --yes postgresql-client
+
+              for attempt in $(seq 1 30); do
+                if PGPASSWORD="$POSTGRES_PASSWORD" \
+                  pg_isready \
+                    --host="$POSTGRES_HOST" \
+                    --port="$POSTGRES_PORT" \
+                    --username="$POSTGRES_USER" \
+                    --dbname="$POSTGRES_DB"; then
+                  echo "PostgreSQL is ready."
+                  break
+                fi
+
+                if [ "$attempt" -eq 30 ]; then
+                  echo "PostgreSQL did not become ready."
+                  exit 1
+                fi
+
+                sleep 2
+              done
+            displayName: Wait for PostgreSQL
+            env:
+              POSTGRES_HOST: $(POSTGRES_HOST)
+              POSTGRES_PORT: $(POSTGRES_PORT)
+              POSTGRES_DB: $(POSTGRES_DB)
+              POSTGRES_USER: $(POSTGRES_USER)
+              POSTGRES_PASSWORD: $(POSTGRES_PASSWORD)
+
+          - bash: |
+              set -euo pipefail
+
+              for sql_file in infrastructure/docker/postgres-init/*.sql; do
+                echo "Applying ${sql_file}"
+
+                PGPASSWORD="$POSTGRES_PASSWORD" \
+                  psql \
+                    --host="$POSTGRES_HOST" \
+                    --port="$POSTGRES_PORT" \
+                    --username="$POSTGRES_USER" \
+                    --dbname="$POSTGRES_DB" \
+                    --set=ON_ERROR_STOP=1 \
+                    --file="$sql_file"
+              done
+            displayName: Initialise PostgreSQL schemas
+            env:
+              POSTGRES_HOST: $(POSTGRES_HOST)
+              POSTGRES_PORT: $(POSTGRES_PORT)
+              POSTGRES_DB: $(POSTGRES_DB)
+              POSTGRES_USER: $(POSTGRES_USER)
+              POSTGRES_PASSWORD: $(POSTGRES_PASSWORD)
+
+          - bash: |
+              set -euo pipefail
+
+              .venv/bin/ruff check .
+              .venv/bin/ruff format --check .
+            displayName: Ruff lint and formatting
+
+          - bash: |
+              set -euo pipefail
+
+              .venv/bin/mypy api app ingestion
+            displayName: Mypy type checking
+
+          - bash: |
+              set -euo pipefail
+
+              .venv/bin/pytest
+            displayName: Python tests
+
+          - bash: |
+              set -euo pipefail
+
+              .venv/bin/python -m ingestion.fpl.extract_bootstrap
+              .venv/bin/python -m ingestion.fpl.extract_fixtures
+            displayName: Ingest FPL integration data
+            env:
+              POSTGRES_HOST: $(POSTGRES_HOST)
+              POSTGRES_PORT: $(POSTGRES_PORT)
+              POSTGRES_DB: $(POSTGRES_DB)
+              POSTGRES_USER: $(POSTGRES_USER)
+              POSTGRES_PASSWORD: $(POSTGRES_PASSWORD)
+
+          - bash: |
+              set -euo pipefail
+
+              cd dbt/fpl_analytics
+
+              ../../.venv/bin/dbt debug \
+                --profiles-dir ../profiles
+
+              ../../.venv/bin/dbt build \
+                --profiles-dir ../profiles
+            displayName: dbt build and tests
+            env:
+              POSTGRES_HOST: $(POSTGRES_HOST)
+              POSTGRES_PORT: $(POSTGRES_PORT)
+              POSTGRES_DB: $(POSTGRES_DB)
+              POSTGRES_USER: $(POSTGRES_USER)
+              POSTGRES_PASSWORD: $(POSTGRES_PASSWORD)
+
+          - bash: |
+              set -euo pipefail
+
+              row_count=$(
+                PGPASSWORD="$POSTGRES_PASSWORD" \
+                  psql \
+                    --host="$POSTGRES_HOST" \
+                    --port="$POSTGRES_PORT" \
+                    --username="$POSTGRES_USER" \
+                    --dbname="$POSTGRES_DB" \
+                    --tuples-only \
+                    --no-align \
+                    --command="
+                      select count(*)
+                      from analytics_gold.player_expected_points_summary;
+                    "
+              )
+
+              echo "Gold player rows: ${row_count}"
+
+              if [ "${row_count}" -le 0 ]; then
+                echo "Gold validation failed."
+                exit 1
+              fi
+            displayName: Validate Gold output
+            env:
+              POSTGRES_HOST: $(POSTGRES_HOST)
+              POSTGRES_PORT: $(POSTGRES_PORT)
+              POSTGRES_DB: $(POSTGRES_DB)
+              POSTGRES_USER: $(POSTGRES_USER)
+              POSTGRES_PASSWORD: $(POSTGRES_PASSWORD)
+
+      - job: Frontend
+        displayName: Next.js frontend
+        pool:
+          vmImage: ubuntu-latest
+
+        steps:
+          - checkout: self
+            clean: true
+
+          - task: NodeTool@0
+            displayName: Use Node.js $(NODE_VERSION)
+            inputs:
+              versionSpec: "$(NODE_VERSION)"
+
+          - bash: |
+              set -euo pipefail
+              npm ci
+            workingDirectory: frontend
+            displayName: Install frontend dependencies
+
+          - bash: |
+              set -euo pipefail
+              npm run lint
+            workingDirectory: frontend
+            displayName: Next.js lint
+
+          - bash: |
+              set -euo pipefail
+              npm run build
+            workingDirectory: frontend
+            displayName: Next.js production build
+            env:
+              NEXT_PUBLIC_API_URL: http://localhost:8000
+
+  - stage: DockerValidation
+    displayName: Docker configuration validation
+    dependsOn: Validate
+    condition: succeeded()
+
+    jobs:
+      - job: Compose
+        displayName: Validate Docker Compose
+        pool:
+          vmImage: ubuntu-latest
+
+        steps:
+          - checkout: self
+            clean: true
+
+          - bash: |
+              set -euo pipefail
+
+              cat > .env <<'ENVEOF'
+              POSTGRES_DB=fpl
+              POSTGRES_USER=fpl_user
+              POSTGRES_PASSWORD=fpl_ci_password
+              PGADMIN_EMAIL=ci@example.com
+              PGADMIN_PASSWORD=ci_password
+              AIRFLOW_JWT_SECRET=ci-only-not-a-production-secret
+              ENVEOF
+
+              docker compose \
+                -f docker-compose.yml \
+                config --quiet
+
+              docker network create fpl-war-room_default
+
+              docker compose \
+                -f docker-compose.airflow.yml \
+                config --quiet
+
+              echo "Both Docker Compose configurations are valid."
+            displayName: Validate application and Airflow Compose
